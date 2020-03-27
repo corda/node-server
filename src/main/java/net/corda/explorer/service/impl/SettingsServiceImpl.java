@@ -17,28 +17,50 @@ public class SettingsServiceImpl implements SettingsService {
 
     @Override
     public void loadApplicationSettings() {
+        File settingsFile = new File("settings.conf");
+        if(!settingsFile.exists()){
+            createSettingFile();
+        }
         try (BufferedReader br= new BufferedReader(
-                new FileReader("settings.conf"))){
-            String st;
-            Settings settings = new Settings();
-            while ((st = br.readLine()) != null){
-                String[] configItem = st.split("=>");
-                switch (configItem[0].trim()){
-                    case "cordapp_dir":
-                        settings.setCordappDirectory(configItem[1].trim());
-                        break;
-                    case "date_format":
-                        settings.setDateFormat(configItem[1].trim());
-                        break;
-                    case "datetime_format":
-                        settings.setDateTimeFormat(configItem[1].trim());
-                        break;
-                }
-            }
-            AppConfig.setSettings(settings);
+                new FileReader("settings.conf"))) {
+            loadSettings(br);
         }catch (IOException e ){
             throw new GenericException(e.getMessage());
         }
+    }
+
+    private void createSettingFile(){
+        try(BufferedWriter bw = new BufferedWriter(new FileWriter("settings.conf"))){
+            bw.write("cordapp_dir=> ");
+            bw.newLine();
+            bw.write("date_format=> dd MMM yyyy");
+            bw.newLine();
+            bw.write("datetime_format=> dd MMM yyyy hh:mm a");
+            bw.newLine();
+            bw.flush();
+        }catch (Exception e){
+            throw new GenericException(e.getMessage());
+        }
+    }
+
+    private void loadSettings(BufferedReader br) throws IOException{
+        String st;
+        Settings settings = new Settings();
+        while ((st = br.readLine()) != null) {
+            String[] configItem = st.split("=>");
+            switch (configItem[0].trim()) {
+                case "cordapp_dir":
+                    settings.setCordappDirectory(configItem[1].trim());
+                    break;
+                case "date_format":
+                    settings.setDateFormat(configItem[1].trim());
+                    break;
+                case "datetime_format":
+                    settings.setDateTimeFormat(configItem[1].trim());
+                    break;
+            }
+        }
+        AppConfig.setSettings(settings);
     }
 
     @Override
