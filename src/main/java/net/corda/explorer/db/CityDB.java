@@ -4,6 +4,8 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -24,8 +26,8 @@ public class CityDB {
 
     private void loadCityData(){
         try {
-            FileInputStream excelFile = new FileInputStream(new File(FILE_NAME));
-            Workbook workbook = new XSSFWorkbook(excelFile);
+            Resource resource = new ClassPathResource(FILE_NAME);
+            Workbook workbook = new XSSFWorkbook(resource.getInputStream());
             Sheet citySheet = workbook.getSheetAt(0);
             Iterator<Row> iterator = citySheet.iterator();
 
@@ -75,9 +77,5 @@ public class CityDB {
         public String getCountry() {
             return country;
         }
-    }
-
-    public static void main(String args[]){
-        new CityDB();
     }
 }

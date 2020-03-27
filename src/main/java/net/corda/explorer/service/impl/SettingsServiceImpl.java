@@ -15,22 +15,34 @@ import java.time.temporal.UnsupportedTemporalTypeException;
 @Service
 public class SettingsServiceImpl implements SettingsService {
 
+    private String macBaseFolder = System.getProperty("user.home") + "/Library";
+
     @Override
     public void loadApplicationSettings() {
-        File settingsFile = new File("settings.conf");
+        String filePath = null;
+        String appBaseFolder = null;
+        if(System.getProperty("os.name").contains("Mac")){
+            filePath = macBaseFolder + "/CordaNodeExplorer/settings.conf";
+            appBaseFolder = macBaseFolder + "/CordaNodeExplorer";
+        }else{
+            // TODO - In-memory Settings
+            throw new GenericException("Unsupported OS");
+        }
+        File settingsFile = new File(filePath);
         if(!settingsFile.exists()){
-            createSettingFile();
+            createSettingFile(filePath, appBaseFolder);
         }
         try (BufferedReader br= new BufferedReader(
-                new FileReader("settings.conf"))) {
+                new FileReader(filePath))) {
             loadSettings(br);
         }catch (IOException e ){
             throw new GenericException(e.getMessage());
         }
     }
 
-    private void createSettingFile(){
-        try(BufferedWriter bw = new BufferedWriter(new FileWriter("settings.conf"))){
+    private void createSettingFile(String filePath, String appBaseFolder){
+        new File(appBaseFolder).mkdir();
+        try(BufferedWriter bw = new BufferedWriter(new FileWriter(filePath))){
             bw.write("cordapp_dir=> ");
             bw.newLine();
             bw.write("date_format=> dd MMM yyyy");
@@ -95,7 +107,12 @@ public class SettingsServiceImpl implements SettingsService {
                 break;
         }
 
-        try(BufferedWriter bw = new BufferedWriter(new FileWriter("settings.conf"))){
+        String filePath = null;
+        if(System.getProperty("os.name").contains("Mac")){
+            filePath = macBaseFolder + "/CordaNodeExplorer/settings.conf";
+        }
+
+        try(BufferedWriter bw = new BufferedWriter(new FileWriter(filePath))){
             bw.write("cordapp_dir=> " + settings.getCordappDirectory());
             bw.newLine();
             bw.write("date_format=> " + settings.getDateFormat());
