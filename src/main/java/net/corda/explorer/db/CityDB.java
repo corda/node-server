@@ -43,6 +43,8 @@ public class CityDB {
                         currentRow.getCell(4).getStringCellValue());
                 database.put(currentRow.getCell(0).getStringCellValue() + "_" +
                         currentRow.getCell(5).getStringCellValue(), cityDetail);
+                database.put(currentRow.getCell(1).getStringCellValue() + "_" +
+                        currentRow.getCell(5).getStringCellValue(), cityDetail);
             }
 
         }catch (Exception e){

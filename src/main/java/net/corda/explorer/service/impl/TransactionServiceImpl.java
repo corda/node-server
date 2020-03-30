@@ -73,7 +73,8 @@ public class TransactionServiceImpl implements TransactionService {
                     "net.corda.core.contracts.Amount",
                     "java.time.LocalDateTime",
                     "java.time.LocalDate",
-                    "java.time.Instant"
+                    "java.time.Instant",
+                    "net.corda.core.crypto.SecureHash"
             )
     );
 
@@ -307,6 +308,9 @@ public class TransactionServiceImpl implements TransactionService {
 
             case "java.time.LocalDate":
                 return LocalDate.parse(flowParam.getParamValue().toString());
+
+            case "net.corda.core.crypto.SecureHash":
+                return SecureHash.parse(flowParam.getParamValue().toString());
 
             default:
                 throw new UnsupportedFlowParamException("Type "+ flowParam.getParamType() + " in Flow Parameter not " +

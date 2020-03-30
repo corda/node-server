@@ -73,14 +73,16 @@ public class ExplorerServiceImpl implements ExplorerService {
         Party party = nodeInfo.getLegalIdentities().get(0);
         CityDB.CityDetail cityDetail = cityDB.getCityDetails(
                 party.getName().getLocality() + "_" + party.getName().getCountry());
-        nodeData.setName(party.getName().getOrganisation());
-        nodeData.setCity(party.getName().getLocality());
-        nodeData.setCountry(cityDetail.getCountry());
-        nodeData.setLat(cityDetail.getLat());
-        nodeData.setLng(cityDetail.getLng());
-        nodeData.setPublicKey(CryptoUtils.toStringShort(party.getOwningKey()).substring(0, 25));
-        nodeData.setAddress(nodeInfo.getAddresses().get(0).toString());
-        partyKeyMap.put(CryptoUtils.toStringShort(party.getOwningKey()), party.getName().getOrganisation());
+        if(cityDetail!=null) {
+            nodeData.setName(party.getName().getOrganisation());
+            nodeData.setCity(party.getName().getLocality());
+            nodeData.setCountry(cityDetail.getCountry());
+            nodeData.setLat(cityDetail.getLat());
+            nodeData.setLng(cityDetail.getLng());
+            nodeData.setPublicKey(CryptoUtils.toStringShort(party.getOwningKey()).substring(0, 25));
+            nodeData.setAddress(nodeInfo.getAddresses().get(0).toString());
+            partyKeyMap.put(CryptoUtils.toStringShort(party.getOwningKey()), party.getName().getOrganisation());
+        }
         return nodeData;
     }
 
