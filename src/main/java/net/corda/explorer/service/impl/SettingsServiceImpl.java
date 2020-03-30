@@ -15,19 +15,12 @@ import java.time.temporal.UnsupportedTemporalTypeException;
 @Service
 public class SettingsServiceImpl implements SettingsService {
 
-    private String macBaseFolder = System.getProperty("user.home") + "/Library";
+    private String baseFolder = System.getProperty("user.home");
+    private String filePath = baseFolder + "/CordaNodeExplorer/settings.conf";
 
     @Override
     public void loadApplicationSettings() {
-        String filePath = null;
-        String appBaseFolder = null;
-        if(System.getProperty("os.name").contains("Mac")){
-            filePath = macBaseFolder + "/CordaNodeExplorer/settings.conf";
-            appBaseFolder = macBaseFolder + "/CordaNodeExplorer";
-        }else{
-            // TODO - In-memory Settings
-            throw new GenericException("Unsupported OS");
-        }
+        String  appBaseFolder = baseFolder + "/CordaNodeExplorer";
         File settingsFile = new File(filePath);
         if(!settingsFile.exists()){
             createSettingFile(filePath, appBaseFolder);
@@ -105,11 +98,6 @@ public class SettingsServiceImpl implements SettingsService {
                 }
                 AppConfig.getAppSettings().setDateTimeFormat(settings.getDateTimeFormat());
                 break;
-        }
-
-        String filePath = null;
-        if(System.getProperty("os.name").contains("Mac")){
-            filePath = macBaseFolder + "/CordaNodeExplorer/settings.conf";
         }
 
         try(BufferedWriter bw = new BufferedWriter(new FileWriter(filePath))){
