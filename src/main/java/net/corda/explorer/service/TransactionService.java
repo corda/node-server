@@ -7,5 +7,5 @@ import net.corda.explorer.model.response.TransactionList;
 public interface TransactionService {
     FlowData getFlowList();
     TransactionList getTransactionList(int pageSize, int offset);
-    void triggerFlow(FlowInfo flowInfo) throws Exception;
+    Object triggerFlow(FlowInfo flowInfo) throws Exception;
 }

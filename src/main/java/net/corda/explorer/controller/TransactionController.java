@@ -39,8 +39,8 @@ public class TransactionController {
     @PostMapping("/start-flow")
     public MessageResponseEntity<String> startFlow(@RequestBody FlowInfo flowInfo){
         try {
-            transactionService.triggerFlow(flowInfo);
-            return new MessageResponseEntity<>();
+            Object response = transactionService.triggerFlow(flowInfo);
+            return new MessageResponseEntity<>(response.toString());
         }catch (Exception e){
             throw new GenericException(e.getMessage());
         }

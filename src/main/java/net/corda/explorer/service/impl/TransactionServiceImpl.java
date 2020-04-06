@@ -215,7 +215,7 @@ public class TransactionServiceImpl implements TransactionService {
         return outputTypeCountList;
     }
     @Override
-    public void triggerFlow(FlowInfo flowInfo) throws UnsupportedFlowParamException,
+    public Object triggerFlow(FlowInfo flowInfo) throws UnsupportedFlowParamException,
             ClassNotFoundException, ExecutionException, InterruptedException {
         Class clazz = Class.forName(flowInfo.getFlowName());
         List<Object> params = new ArrayList<>();
@@ -223,9 +223,9 @@ public class TransactionServiceImpl implements TransactionService {
             params.add(buildFlowParam(flowParam));
         }
         if(params.size() == 0){
-            NodeRPCClient.getRpcProxy().startFlowDynamic(clazz).getReturnValue().get();
+            return NodeRPCClient.getRpcProxy().startFlowDynamic(clazz).getReturnValue().get();
         }else {
-            NodeRPCClient.getRpcProxy().startFlowDynamic(clazz, params.toArray()).getReturnValue().get();
+            return NodeRPCClient.getRpcProxy().startFlowDynamic(clazz, params.toArray()).getReturnValue().get();
         }
     }
 
