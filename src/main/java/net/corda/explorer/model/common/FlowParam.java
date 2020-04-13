@@ -65,4 +65,20 @@ public class FlowParam {
     public void setHasParameterizedType(boolean hasParameterizedType) {
         this.hasParameterizedType = hasParameterizedType;
     }
+
+//    public static class ParamListWrapper{
+//        private List<FlowParam> params;
+//
+//        public ParamListWrapper(List<FlowParam> params) {
+//            this.params = params;
+//        }
+//
+//        public List<FlowParam> getParams() {
+//            return params;
+//        }
+//
+//        public void setParams(List<FlowParam> params) {
+//            this.params = params;
+//        }
+//    }
 }
