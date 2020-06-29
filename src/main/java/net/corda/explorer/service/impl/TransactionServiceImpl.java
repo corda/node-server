@@ -439,16 +439,20 @@ public class TransactionServiceImpl implements TransactionService {
 
         for (Constructor constructor : flowClass.getConstructors()) {
             if(constructor.getParameters().length> 0 && constructor.getParameters()[0].isNamePresent()) {
-                flowParamList = collectObjectTypes(constructor.getParameters());
-                conMap.put("Constructor_" + counter, flowParamList);
-                counter++;
+                try {
+                    flowParamList = collectObjectTypes(constructor.getParameters());
+                    conMap.put("Constructor_" + counter, flowParamList);
+                    counter++;
+                } catch (ClassNotFoundException | UnsupportedFlowParamException cne) {
+                    cne.printStackTrace();
+                }
             }
         }
 
         return conMap;
     }
 
-    private List<FlowParam> collectObjectTypes(Parameter[] parameters){
+    private List<FlowParam> collectObjectTypes(Parameter[] parameters) throws ClassNotFoundException {
         List<FlowParam> flowParamList = new ArrayList<>();
         for(Parameter param: parameters) {
             if (param.isNamePresent()) {
@@ -469,8 +473,8 @@ public class TransactionServiceImpl implements TransactionService {
 //                            list.add(paramList);
 //                            flowParam.setParamValue(list);
 //                        }
-                    }catch (ClassNotFoundException cne){
-                       throw new GenericException(cne.getMessage());
+                    } catch (ClassNotFoundException cne){
+                       throw new UnsupportedFlowParamException("Flow param unsupported by Node Explorer see https://github.com/corda/node-explorer/releases");
                     }
                 }
                 else
@@ -482,7 +486,7 @@ public class TransactionServiceImpl implements TransactionService {
         return flowParamList;
     }
 
-    private void removeKotlinDefaultConstructorAndCollectParam(Class type, FlowParam flowParam){
+    private void removeKotlinDefaultConstructorAndCollectParam(Class type, FlowParam flowParam) throws ClassNotFoundException {
         if(!typeList.contains(type.getCanonicalName())){
             for (int i = 0; i < type.getConstructors().length; i++) {
                 boolean collected = false;
