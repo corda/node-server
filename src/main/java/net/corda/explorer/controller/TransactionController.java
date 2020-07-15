@@ -40,6 +40,9 @@ public class TransactionController {
     public MessageResponseEntity<String> startFlow(@RequestBody FlowInfo flowInfo){
         try {
             Object response = transactionService.triggerFlow(flowInfo);
+            if(response == null){
+                return new MessageResponseEntity<>("Flow Executed Successfully");
+            }
             return new MessageResponseEntity<>(response.toString());
         }catch (Exception e){
             throw new GenericException(e.getMessage());
