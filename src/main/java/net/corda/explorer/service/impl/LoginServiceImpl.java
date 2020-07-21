@@ -1,7 +1,6 @@
 package net.corda.explorer.service.impl;
 
 import net.corda.explorer.exception.ConnectionException;
-import net.corda.explorer.model.common.Settings;
 import net.corda.explorer.model.request.LoginRequest;
 import net.corda.explorer.model.response.Profile;
 import net.corda.explorer.rpc.NodeRPCClient;
@@ -26,5 +25,10 @@ public class LoginServiceImpl implements LoginService {
         Profile profile = rpcClient.doLogin(loginRequest);
         settingsService.loadApplicationSettings();
         return profile;
+    }
+
+    @Override
+    public Profile getProfile() {
+        return rpcClient.getProfile();
     }
 }
