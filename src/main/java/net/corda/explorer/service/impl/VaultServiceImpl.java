@@ -100,15 +100,24 @@ public class VaultServiceImpl implements VaultService {
     public VaultFilter  getVaultFilters() {
         VaultFilter filter = new VaultFilter();
         QueryCriteria.VaultQueryCriteria queryCriteria = new QueryCriteria.VaultQueryCriteria().withStatus(Vault.StateStatus.ALL);
-        Vault.Page<ContractState> result = NodeRPCClient.getRpcProxy().vaultQueryByCriteria(queryCriteria, ContractState.class);
         Map<String, String> stateTypeMap = new TreeMap<>();
-        result.getStates().forEach(stateAndRef -> {
-            stateTypeMap.put(stateAndRef.getState().getData().getClass().toString().substring(
-                    stateAndRef.getState().getData().getClass().toString().lastIndexOf(".") + 1),
-                    stateAndRef.getState().getData().getClass().toString());
-            contractStateClassMap.put(stateAndRef.getState().getData().getClass().toString(),
-                    stateAndRef.getState().getData().getClass());
-        });
+        Integer offset = 1;
+        Boolean done = false;
+        while (!done){
+            Vault.Page<ContractState> result = NodeRPCClient.getRpcProxy().vaultQueryByWithPagingSpec(ContractState.class, queryCriteria, new PageSpecification(offset, 200));
+            result.getStates().forEach(stateAndRef -> {
+                stateTypeMap.put(stateAndRef.getState().getData().getClass().toString().substring(
+                        stateAndRef.getState().getData().getClass().toString().lastIndexOf(".") + 1),
+                        stateAndRef.getState().getData().getClass().toString());
+                contractStateClassMap.put(stateAndRef.getState().getData().getClass().toString(),
+                        stateAndRef.getState().getData().getClass());
+            });
+            offset++;
+            if(result.getStates().size() == 0){
+                done = true;
+            }
+        }
+
         filter.setStateTypes(stateTypeMap);
 
         filter.setNotaries(NodeRPCClient.getRpcProxy().notaryIdentities());
