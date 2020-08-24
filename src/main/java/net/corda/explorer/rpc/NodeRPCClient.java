@@ -1,9 +1,7 @@
 package net.corda.explorer.rpc;
 
-import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
-import com.jcraft.jsch.UserInfo;
 import net.corda.client.rpc.CordaRPCClient;
 import net.corda.client.rpc.CordaRPCClientConfiguration;
 import net.corda.client.rpc.RPCException;
@@ -57,15 +55,18 @@ public class NodeRPCClient {
             CordaRPCClientConfiguration config = new CordaRPCClientConfiguration(Duration.ofMinutes(3), 4);
             rpcProxy = new CordaRPCClient(NetworkHostAndPort.parse(hostForRPCClient + ":" +
                     loginRequest.getPort()), config).start(loginRequest.getUsername(), loginRequest.getPassword()).getProxy();
-
-            Party party = rpcProxy.nodeInfo().getLegalIdentities().get(0);
-            Profile profile = new Profile();
-            profile.setName(party.getName().getOrganisation());
-            profile.setCity(party.getName().getLocality());
-            profile.setCountry(party.getName().getCountry());
-            return profile;
+            return getProfile();
         } catch (RPCException re) {
             throw new ConnectionException(re.getMessage());
         }
+    }
+
+    public Profile getProfile() {
+        Party party = rpcProxy.nodeInfo().getLegalIdentities().get(0);
+        Profile profile = new Profile();
+        profile.setName(party.getName().getOrganisation());
+        profile.setCity(party.getName().getLocality());
+        profile.setCountry(party.getName().getCountry());
+        return profile;
     }
 }
