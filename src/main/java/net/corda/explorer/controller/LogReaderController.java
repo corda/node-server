@@ -44,6 +44,6 @@ public class LogReaderController {
     }
 
     private boolean isStartOfLog(String line) {
-        return Stream.of("[INFO ]", "[WARN ]", "[ERROR]").anyMatch(line::startsWith);
+        return Stream.of("[INFO ]", "[WARN ]", "[ERROR]").anyMatch(line::startsWith); 
     }
 }
