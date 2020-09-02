@@ -4,6 +4,7 @@ import net.corda.explorer.model.request.ReadRequest;
 import net.corda.explorer.model.response.LogEntries;
 import net.corda.explorer.model.response.LogEntry;
 import net.corda.explorer.service.StringToEntry;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.*;
@@ -16,8 +17,8 @@ import java.util.stream.Stream;
 @CrossOrigin(origins = "*")
 @RestController
 public class LogReaderController {
-    @GetMapping("logReader/read")
-    public LogEntries getLogEntries(@RequestBody ReadRequest readRequest) {
+    @PostMapping("logReader/read")
+    public LogEntries getLogEntries(@NotNull @RequestBody ReadRequest readRequest) {
         final File logFile = new File(readRequest.path());
         System.out.println(readRequest.path());
         final List<LogEntry> entries = new ArrayList<>();
@@ -25,7 +26,7 @@ public class LogReaderController {
         long entriesSeen = 0;
 
         try (BufferedReader reader = new BufferedReader(new FileReader(logFile))) {
-            for (String line; (line = reader.readLine()) != null && entriesSeen <= readRequest.getEndIndex(); ) {
+            for (String line; (line = reader.readLine()) != null && entriesSeen <= readRequest.getStopIndex(); ) {
                 if (isStartOfLog(line)) {
                     if (stringBuilder.length() != 0 && entriesSeen >= readRequest.getStartIndex()) {
                         entries.add(StringToEntry.parse(stringBuilder.toString()));

@@ -5,12 +5,12 @@ import java.util.List;
 
 public class ReadRequest {
     private int startIndex;
-    private int endIndex;
+    private int stopIndex;
     private List<String> components;
 
     public int getStartIndex() { return startIndex; }
 
-    public int getEndIndex() { return endIndex; }
+    public int getStopIndex() { return stopIndex; }
 
     public List<String> getComponents() { return components; }
 
@@ -18,8 +18,8 @@ public class ReadRequest {
         this.startIndex = startIndex;
     }
 
-    public void setEndIndex(int endIndex) {
-        this.endIndex = endIndex;
+    public void setStopIndex(int stopIndex) {
+        this.stopIndex = stopIndex;
     }
 
     public void setComponents(List<String> components) {
