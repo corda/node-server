@@ -36,7 +36,7 @@ public class LogReaderController {
                 }
                 else stringBuilder.append(line);
             }
-        }
+        } 
         catch (IOException | ParseException ex) { ex.printStackTrace(); }
 
         Collections.reverse(entries); // so that the most recent entries are at the top
