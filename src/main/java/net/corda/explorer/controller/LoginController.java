@@ -21,11 +21,16 @@ public class LoginController {
     }
 
     @PostMapping("/login")
-    public MessageResponseEntity<Profile> login(@RequestBody LoginRequest loginRequest){
+    public MessageResponseEntity<Profile> login(@RequestBody LoginRequest loginRequest) {
         try {
             return new MessageResponseEntity<>(loginService.loginToNode(loginRequest));
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new GenericException(e.getMessage());
         }
+    }
+
+    @GetMapping("/profile")
+    public MessageResponseEntity<Profile> getProfile() {
+        return new MessageResponseEntity<>(loginService.getProfile());
     }
 }

@@ -7,5 +7,6 @@ import net.corda.explorer.model.response.Profile;
 import java.io.IOException;
 
 public interface LoginService {
-    Profile loginToNode(LoginRequest loginRequest) throws ConnectionException, IOException;
+    Profile loginToNode(LoginRequest loginRequest) throws ConnectionException;
+    Profile getProfile();
 }
