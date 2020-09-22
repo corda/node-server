@@ -26,6 +26,8 @@ bootJar {
     version = '0.1.0'
 }
 
+libsDirName = '../../'
+
 repositories {
     mavenCentral()
     maven { url 'https://ci-artifactory.corda.r3cev.com/artifactory/corda' }

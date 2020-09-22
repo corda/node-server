@@ -1,12 +1,15 @@
 package net.corda.explorer.controller;
 
+import net.corda.explorer.exception.AuthenticationException;
 import net.corda.explorer.exception.GenericException;
 import net.corda.explorer.model.response.MessageResponseEntity;
 import net.corda.explorer.model.response.NetworkMap;
 import net.corda.explorer.service.ExplorerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -15,11 +18,16 @@ import java.util.List;
 @RestController
 public class ExplorerController {
 
+    @Value("${servertoken}")
+    private String servertoken;
+
     @Autowired
     private ExplorerService explorerService;
 
     @GetMapping("/network-map")
-    public MessageResponseEntity<NetworkMap> networkMap(){
+    public MessageResponseEntity<NetworkMap> networkMap(@RequestHeader(value="clienttoken") String clienttoken) throws AuthenticationException {
+        // auth check
+        if (!servertoken.equals(clienttoken)) throw new AuthenticationException("No valid client token");
         try {
             NetworkMap networkMap = explorerService.getNetworkMap();
             return new MessageResponseEntity<>(networkMap);
@@ -29,7 +37,9 @@ public class ExplorerController {
     }
 
     @GetMapping("/party-list")
-    public MessageResponseEntity<List<String>> partyList(){
+    public MessageResponseEntity<List<String>> partyList(@RequestHeader(value="clienttoken") String clienttoken) throws AuthenticationException {
+        // auth check
+        if (!servertoken.equals(clienttoken)) throw new AuthenticationException("No valid client token");
         try {
             List<String> parties = explorerService.getParties();
             return new MessageResponseEntity<>(parties);
