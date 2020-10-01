@@ -1,5 +1,6 @@
 spring.jackson.serialization.FAIL_ON_EMPTY_BEANS: false
 server.port: 8580
+servertoken: 'ebb7faee-95df-45ec-99a6-42b7f826a8d1'
 #autologin.enabled: true
 #autologin.hostName: localhost
 #autologin.port: 10001
