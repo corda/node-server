@@ -1,11 +1,13 @@
 package net.corda.explorer.controller;
 
+import net.corda.explorer.constants.MessageConstants;
 import net.corda.explorer.exception.AuthenticationException;
 import net.corda.explorer.model.request.EntriesCountRequest;
 import net.corda.explorer.model.request.ReadRequest;
 import net.corda.explorer.model.response.EntriesCountResponse;
 import net.corda.explorer.model.response.LogEntries;
 import net.corda.explorer.model.response.LogEntry;
+import net.corda.explorer.model.response.MessageResponseEntity;
 import net.corda.explorer.service.StringToEntry;
 import net.corda.explorer.service.impl.ReverseLineInputStream;
 import org.jetbrains.annotations.NotNull;
@@ -15,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 import java.io.*;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -27,9 +28,11 @@ public class LogReaderController {
     private String servertoken;
 
     @PostMapping("logReader/read")
-    public LogEntries getLogEntries(@RequestHeader(value="clienttoken") String clienttoken, @NotNull @RequestBody ReadRequest readRequest) throws AuthenticationException {
+    public MessageResponseEntity<?> getLogEntries(@RequestHeader(value="clienttoken") String clienttoken, @NotNull @RequestBody ReadRequest readRequest) {
         // auth check
-        if (!servertoken.equals(clienttoken)) throw new AuthenticationException("No valid client token");
+        if (!servertoken.equals(clienttoken)) {
+            return MessageConstants.UNAUTHORIZED;
+        }
 
         final List<LogEntry> entries = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
@@ -49,13 +52,15 @@ public class LogReaderController {
         }
         catch (IOException | ParseException ex) { ex.printStackTrace(); }
 
-        return new LogEntries(entries);
+        return new MessageResponseEntity<>(new LogEntries(entries));
     }
 
     @PostMapping("logReader/entriesCount")
-    public EntriesCountResponse getEntriesCount(@RequestHeader(value="clienttoken") String clienttoken, @NotNull @RequestBody EntriesCountRequest request) throws AuthenticationException {
+    public MessageResponseEntity<?> getEntriesCount(@RequestHeader(value="clienttoken") String clienttoken, @NotNull @RequestBody EntriesCountRequest request) {
         // auth check
-        if (!servertoken.equals(clienttoken)) throw new AuthenticationException("No valid client token");
+        if (!servertoken.equals(clienttoken)) {
+            return MessageConstants.UNAUTHORIZED;
+        }
 
         int count = 0;
         try (BufferedReader backwardsReader = backwardsReaderFromComponents(request.getComponents())) {
@@ -64,7 +69,7 @@ public class LogReaderController {
             }
         }
         catch (IOException ex) { ex.printStackTrace(); }
-        return new EntriesCountResponse(count);
+        return new MessageResponseEntity<>(new EntriesCountResponse(count));
     }
 
     private boolean isStartOfLog(String line) {

@@ -1,5 +1,6 @@
 package net.corda.explorer.controller;
 
+import net.corda.explorer.constants.MessageConstants;
 import net.corda.explorer.exception.AuthenticationException;
 import net.corda.explorer.exception.GenericException;
 import net.corda.explorer.model.response.MessageResponseEntity;
@@ -20,9 +21,11 @@ public class SettingsController {
     private SettingsService settingsService;
 
     @GetMapping("settings")
-    public MessageResponseEntity<Settings> getSettings(@RequestHeader(value="clienttoken") String clienttoken) throws AuthenticationException {
+    public MessageResponseEntity<?> getSettings(@RequestHeader(value="clienttoken") String clienttoken)  {
         // auth check
-        if (!servertoken.equals(clienttoken)) throw new AuthenticationException("No valid client token");
+        if (!servertoken.equals(clienttoken)) {
+            return MessageConstants.UNAUTHORIZED;
+        }
         try{
             return new MessageResponseEntity<>(settingsService.getApplicationSettings());
         }catch (Exception e){
@@ -31,9 +34,11 @@ public class SettingsController {
     }
 
     @PostMapping("settings/{type}")
-    private MessageResponseEntity<Void> updateCorDappDirectory(@RequestHeader(value="clienttoken") String clienttoken, @RequestBody Settings settings, @PathVariable String type) throws AuthenticationException {
+    private MessageResponseEntity<Void> updateCorDappDirectory(@RequestHeader(value="clienttoken") String clienttoken, @RequestBody Settings settings, @PathVariable String type) {
         // auth check
-        if (!servertoken.equals(clienttoken)) throw new AuthenticationException("No valid client token");
+        if (!servertoken.equals(clienttoken)) {
+            return MessageConstants.UNAUTHORIZED;
+        }
         try{
             return new MessageResponseEntity<>(settingsService.updateSettings(settings, type));
         }catch (Exception e){

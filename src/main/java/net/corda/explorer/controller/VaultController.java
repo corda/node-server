@@ -1,7 +1,6 @@
 package net.corda.explorer.controller;
 
-import net.corda.core.contracts.ContractState;
-import net.corda.core.node.services.Vault;
+import net.corda.explorer.constants.MessageConstants;
 import net.corda.explorer.exception.AuthenticationException;
 import net.corda.explorer.exception.GenericException;
 import net.corda.explorer.model.response.VaultFilter;
@@ -23,20 +22,25 @@ public class VaultController {
     private VaultService vaultService;
 
     @PostMapping("/vault-query")
-    public MessageResponseEntity<Vault.Page<ContractState>> getVaultStates(@RequestHeader(value="clienttoken") String clienttoken, @RequestBody VaultFilterSelection filter) throws AuthenticationException {
+
+    public MessageResponseEntity<?> getVaultStates(@RequestHeader(value = "clienttoken") String clienttoken, @RequestBody VaultFilterSelection filter) {
         // auth check
-        if (!servertoken.equals(clienttoken)) throw new AuthenticationException("No valid client token");
-        try{
+        if (!servertoken.equals(clienttoken)) {
+            return MessageConstants.UNAUTHORIZED;
+        }
+        try {
             return new MessageResponseEntity<>(vaultService.getVaultStates(filter));
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new GenericException(e.getMessage());
         }
     }
 
     @GetMapping("/vault-filter")
-    public MessageResponseEntity<VaultFilter> getVaultFilter(@RequestHeader(value="clienttoken") String clienttoken) throws AuthenticationException {
+    public MessageResponseEntity<?> getVaultFilter(@RequestHeader(value="clienttoken") String clienttoken) {
         // auth check
-        if (!servertoken.equals(clienttoken)) throw new AuthenticationException("No valid client token");
+        if (!servertoken.equals(clienttoken)) {
+            return MessageConstants.UNAUTHORIZED;
+        }
         try{
             return new MessageResponseEntity<>(vaultService.getVaultFilters());
         }catch (Exception e){

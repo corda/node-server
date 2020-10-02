@@ -1,5 +1,6 @@
 package net.corda.explorer.controller;
 
+import net.corda.explorer.constants.MessageConstants;
 import net.corda.explorer.exception.AuthenticationException;
 import net.corda.explorer.exception.GenericException;
 import net.corda.explorer.model.response.MessageResponseEntity;
@@ -25,9 +26,11 @@ public class ExplorerController {
     private ExplorerService explorerService;
 
     @GetMapping("/network-map")
-    public MessageResponseEntity<NetworkMap> networkMap(@RequestHeader(value="clienttoken") String clienttoken) throws AuthenticationException {
+    public MessageResponseEntity<?> networkMap(@RequestHeader(value="clienttoken") String clienttoken) {
         // auth check
-        if (!servertoken.equals(clienttoken)) throw new AuthenticationException("No valid client token");
+        if (!servertoken.equals(clienttoken)) {
+            return MessageConstants.UNAUTHORIZED;
+        }
         try {
             NetworkMap networkMap = explorerService.getNetworkMap();
             return new MessageResponseEntity<>(networkMap);
@@ -37,9 +40,11 @@ public class ExplorerController {
     }
 
     @GetMapping("/party-list")
-    public MessageResponseEntity<List<String>> partyList(@RequestHeader(value="clienttoken") String clienttoken) throws AuthenticationException {
+    public MessageResponseEntity<?> partyList(@RequestHeader(value="clienttoken") String clienttoken) {
         // auth check
-        if (!servertoken.equals(clienttoken)) throw new AuthenticationException("No valid client token");
+        if (!servertoken.equals(clienttoken)) {
+            return MessageConstants.UNAUTHORIZED;
+        }
         try {
             List<String> parties = explorerService.getParties();
             return new MessageResponseEntity<>(parties);

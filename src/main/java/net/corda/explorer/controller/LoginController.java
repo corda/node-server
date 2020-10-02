@@ -1,14 +1,12 @@
 package net.corda.explorer.controller;
 
-import net.corda.explorer.exception.AuthenticationException;
+import net.corda.explorer.constants.MessageConstants;
 import net.corda.explorer.exception.GenericException;
 import net.corda.explorer.model.request.LoginRequest;
 import net.corda.explorer.model.response.MessageResponseEntity;
-import net.corda.explorer.model.response.Profile;
 import net.corda.explorer.service.LoginService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
 @CrossOrigin(origins = "*")
@@ -21,17 +19,23 @@ public class LoginController {
     @Autowired
     private LoginService loginService;
 
+
+
     @GetMapping("/server_awake")
-    public MessageResponseEntity<String> server_awake(@RequestHeader(value="clienttoken") String clienttoken) throws AuthenticationException {
+    public MessageResponseEntity<?> server_awake(@RequestHeader(value="clienttoken") String clienttoken) {
         // auth check
-        if (!servertoken.equals(clienttoken)) throw new AuthenticationException("No valid client token");
+        if (!servertoken.equals(clienttoken)) {
+            return MessageConstants.UNAUTHORIZED;
+        }
         return new MessageResponseEntity<>();
     }
 
     @PostMapping("/login")
-    public MessageResponseEntity<Profile> login(@RequestHeader(value="clienttoken") String clienttoken, @RequestBody LoginRequest loginRequest) throws AuthenticationException {
+    public MessageResponseEntity<?> login(@RequestHeader(value="clienttoken") String clienttoken, @RequestBody LoginRequest loginRequest) {
         // auth check
-        if (!servertoken.equals(clienttoken)) throw new AuthenticationException("No valid client token");
+        if (!servertoken.equals(clienttoken)) {
+            return MessageConstants.UNAUTHORIZED;
+        }
         try {
             return new MessageResponseEntity<>(loginService.loginToNode(loginRequest));
         } catch (Exception e) {
@@ -40,9 +44,11 @@ public class LoginController {
     }
 
     @GetMapping("/profile")
-    public MessageResponseEntity<Profile> getProfile(@RequestHeader(value="clienttoken") String clienttoken) throws AuthenticationException {
+    public MessageResponseEntity<?> getProfile(@RequestHeader(value="clienttoken") String clienttoken) {
         // auth check
-        if (!servertoken.equals(clienttoken)) throw new AuthenticationException("No valid client token");
+        if (!servertoken.equals(clienttoken)) {
+            return MessageConstants.UNAUTHORIZED;
+        }
         return new MessageResponseEntity<>(loginService.getProfile());
     }
 }

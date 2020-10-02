@@ -3,6 +3,7 @@ package net.corda.explorer.controller;
 import net.corda.client.rpc.RPCException;
 import net.corda.core.node.NetworkParameters;
 import net.corda.core.node.NodeDiagnosticInfo;
+import net.corda.explorer.constants.MessageConstants;
 import net.corda.explorer.exception.AuthenticationException;
 import net.corda.explorer.exception.GenericException;
 import net.corda.explorer.model.response.MessageResponseEntity;
@@ -25,9 +26,11 @@ public class DashboardController {
     private DashboardService dashboardService;
 
     @GetMapping("dashboard/node-diagnostics")
-    public MessageResponseEntity<NodeDiagnosticInfo> getNodeDiagnostics(@RequestHeader(value="clienttoken") String clienttoken) throws AuthenticationException {
+    public MessageResponseEntity<?> getNodeDiagnostics(@RequestHeader(value="clienttoken") String clienttoken) {
         // auth check
-        if (!servertoken.equals(clienttoken)) throw new AuthenticationException("No valid client token");
+        if (!servertoken.equals(clienttoken)) {
+            return MessageConstants.UNAUTHORIZED;
+        }
         try {
             return new MessageResponseEntity<>(dashboardService.nodeDiagnosticInfo());
         }catch (RPCException e){
@@ -42,9 +45,11 @@ public class DashboardController {
     }
 
     @GetMapping("dashboard/network-parameters")
-    public MessageResponseEntity<NetworkParameters> getNetworkParameters(@RequestHeader(value="clienttoken") String clienttoken) throws AuthenticationException {
+    public MessageResponseEntity<?> getNetworkParameters(@RequestHeader(value="clienttoken") String clienttoken) {
         // auth check
-        if (!servertoken.equals(clienttoken)) throw new AuthenticationException("No valid client token");
+        if (!servertoken.equals(clienttoken)) {
+            return MessageConstants.UNAUTHORIZED;
+        }
         try {
             return new MessageResponseEntity<>(dashboardService.networkParameters());
         }catch (Exception e){
