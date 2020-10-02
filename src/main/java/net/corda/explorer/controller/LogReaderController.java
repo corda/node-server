@@ -1,13 +1,13 @@
 package net.corda.explorer.controller;
 
 import net.corda.explorer.constants.MessageConstants;
-import net.corda.explorer.exception.AuthenticationException;
 import net.corda.explorer.model.request.EntriesCountRequest;
 import net.corda.explorer.model.request.ReadRequest;
 import net.corda.explorer.model.response.EntriesCountResponse;
 import net.corda.explorer.model.response.LogEntries;
 import net.corda.explorer.model.response.LogEntry;
 import net.corda.explorer.model.response.MessageResponseEntity;
+import net.corda.explorer.rpc.AuthCheck;
 import net.corda.explorer.service.StringToEntry;
 import net.corda.explorer.service.impl.ReverseLineInputStream;
 import org.jetbrains.annotations.NotNull;
@@ -18,6 +18,7 @@ import java.io.*;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 @CrossOrigin(origins = "*")
@@ -28,11 +29,9 @@ public class LogReaderController {
     private String servertoken;
 
     @PostMapping("logReader/read")
-    public MessageResponseEntity<?> getLogEntries(@RequestHeader(value="clienttoken") String clienttoken, @NotNull @RequestBody ReadRequest readRequest) {
+    public MessageResponseEntity<?> getLogEntries(@RequestHeader Map<String, String> headers, @NotNull @RequestBody ReadRequest readRequest) {
         // auth check
-        if (!servertoken.equals(clienttoken)) {
-            return MessageConstants.UNAUTHORIZED;
-        }
+        if (AuthCheck.notAuthorizedToProxy(headers)) return MessageConstants.UNAUTHORIZED;
 
         final List<LogEntry> entries = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
@@ -56,11 +55,9 @@ public class LogReaderController {
     }
 
     @PostMapping("logReader/entriesCount")
-    public MessageResponseEntity<?> getEntriesCount(@RequestHeader(value="clienttoken") String clienttoken, @NotNull @RequestBody EntriesCountRequest request) {
+    public MessageResponseEntity<?> getEntriesCount(@RequestHeader Map<String, String> headers, @NotNull @RequestBody EntriesCountRequest request) {
         // auth check
-        if (!servertoken.equals(clienttoken)) {
-            return MessageConstants.UNAUTHORIZED;
-        }
+        if (AuthCheck.notAuthorizedToProxy(headers)) return MessageConstants.UNAUTHORIZED;
 
         int count = 0;
         try (BufferedReader backwardsReader = backwardsReaderFromComponents(request.getComponents())) {

@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.util.UUID;
 
 @Service
 public class LoginServiceImpl implements LoginService {
@@ -39,7 +40,7 @@ public class LoginServiceImpl implements LoginService {
     }
 
     @Override
-    public Profile getProfile() {
-        return rpcClient.getProfile();
+    public Profile getProfile(UUID nodeConnId) {
+        return rpcClient.getProfile(nodeConnId);
     }
 }

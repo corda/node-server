@@ -2,6 +2,7 @@ package net.corda.explorer.service.impl;
 
 import net.corda.core.crypto.CryptoUtils;
 import net.corda.core.identity.Party;
+import net.corda.core.messaging.CordaRPCOps;
 import net.corda.core.node.NodeInfo;
 import net.corda.explorer.db.CityDB;
 import net.corda.explorer.model.response.NetworkMap;
@@ -10,10 +11,7 @@ import net.corda.explorer.service.ExplorerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class ExplorerServiceImpl implements ExplorerService {
@@ -22,17 +20,17 @@ public class ExplorerServiceImpl implements ExplorerService {
     private CityDB cityDB;
     private Map<String, String> partyKeyMap = new HashMap<>();
 
-    public Map<String, String> getPartyKeyMap() {
+    public Map<String, String> getPartyKeyMap(CordaRPCOps proxy) {
         if(partyKeyMap.keySet().size() == 0)
-            getNetworkMap();
+            getNetworkMap(proxy);
         return partyKeyMap;
     }
 
     @Override
-    public List<String> getParties() {
+    public List<String> getParties(CordaRPCOps proxy) {
         List<String> parties = new ArrayList<>();
-        List<NodeInfo> nodeInfoList = NodeRPCClient.getRpcProxy().networkMapSnapshot();
-        NodeInfo selfNodeInfo = NodeRPCClient.getRpcProxy().nodeInfo();
+        List<NodeInfo> nodeInfoList = proxy.networkMapSnapshot();
+        NodeInfo selfNodeInfo = proxy.nodeInfo();
 
         for(NodeInfo nodeInfo: nodeInfoList){
             if(!(nodeInfo.equals(selfNodeInfo))) {
@@ -42,12 +40,12 @@ public class ExplorerServiceImpl implements ExplorerService {
         return parties;
     }
 
-    public NetworkMap getNetworkMap(){
-        List<NodeInfo> nodeInfoList = NodeRPCClient.getRpcProxy().networkMapSnapshot();
-        List<Party> notaries = NodeRPCClient.getRpcProxy().notaryIdentities();
+    public NetworkMap getNetworkMap(CordaRPCOps proxy){
+        List<NodeInfo> nodeInfoList = proxy.networkMapSnapshot();
+        List<Party> notaries = proxy.notaryIdentities();
         NetworkMap networkMap = new NetworkMap();
 
-        NodeInfo selfNodeInfo = NodeRPCClient.getRpcProxy().nodeInfo();
+        NodeInfo selfNodeInfo = proxy.nodeInfo();
         networkMap.setSelf(getNodeDataFromNodeInfo(selfNodeInfo));
 
         List<NetworkMap.NodeData> notaryList = new ArrayList<>();

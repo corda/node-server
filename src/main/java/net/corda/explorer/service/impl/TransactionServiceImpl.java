@@ -6,6 +6,7 @@ import net.corda.core.contracts.UniqueIdentifier;
 import net.corda.core.crypto.CryptoUtils;
 import net.corda.core.crypto.SecureHash;
 import net.corda.core.internal.TransactionDeserialisationException;
+import net.corda.core.messaging.CordaRPCOps;
 import net.corda.core.transactions.CoreTransaction;
 import net.corda.core.transactions.SignedTransaction;
 import net.corda.core.transactions.WireTransaction;
@@ -80,18 +81,18 @@ public class TransactionServiceImpl implements TransactionService {
     );
 
     @Override
-    public FlowData getFlowList() {
+    public FlowData getFlowList(CordaRPCOps proxy) {
         FlowData flowData = new FlowData();
         List<File> jarFiles = loadCorDappsToClassPath();
         this.jarFiles = jarFiles;
-        flowData.setFlowInfoList(loadFlowsInfoFromJarFiles(jarFiles, NodeRPCClient.getRpcProxy().registeredFlows()));
+        flowData.setFlowInfoList(loadFlowsInfoFromJarFiles(jarFiles, proxy.registeredFlows()));
         return flowData;
     }
 
     @Override
     @SuppressWarnings( "deprecation" )
-    public TransactionList getTransactionList(int pageSize, int offset) {
-        List<SignedTransaction> signedTransactions = NodeRPCClient.getRpcProxy().internalVerifiedTransactionsSnapshot();
+    public TransactionList getTransactionList(CordaRPCOps proxy, int pageSize, int offset) {
+        List<SignedTransaction> signedTransactions = proxy.internalVerifiedTransactionsSnapshot();
         TransactionList transactionList = new TransactionList();
         List<TransactionList.TransactionData> transactionDataList = new ArrayList<>();
         transactionList.setTotalRecords(signedTransactions.size());
@@ -102,10 +103,10 @@ public class TransactionServiceImpl implements TransactionService {
                 CoreTransaction coreTransaction = signedTransactions.get(i).getCoreTransaction();
                 TransactionList.TransactionData transactionData = new TransactionList.TransactionData();
 
-                transactionData.setSigners(getSignersFromTx(signedTransactions.get(i)));
+                transactionData.setSigners(getSignersFromTx(proxy, signedTransactions.get(i)));
 
                 if (coreTransaction.getInputs().size() > 0) {
-                    transactionData.setInputs(getInputsFromTx(coreTransaction));
+                    transactionData.setInputs(getInputsFromTx(proxy, coreTransaction));
                     addInputTypeAndCount(transactionData);
                 }
 
@@ -130,23 +131,23 @@ public class TransactionServiceImpl implements TransactionService {
         return transactionList;
     }
 
-    private List<TransactionList.Signer> getSignersFromTx(SignedTransaction signedTransaction){
+    private List<TransactionList.Signer> getSignersFromTx(CordaRPCOps proxy, SignedTransaction signedTransaction){
         List<TransactionList.Signer> signerList = new ArrayList<>();
         signedTransaction.getSigs().forEach(signature -> {
             String key = CryptoUtils.toStringShort(signature.getBy());
             TransactionList.Signer signer = new TransactionList.Signer();
             signer.setSignature(signature);
-            signer.setPartyName(explorerService.getPartyKeyMap().get(key));
+            signer.setPartyName(explorerService.getPartyKeyMap(proxy).get(key));
             signerList.add(signer);
         });
         return signerList;
     }
 
     @SuppressWarnings("deprecation")
-    private List<TransactionList.StateAndType> getInputsFromTx(CoreTransaction coreTransaction){
+    private List<TransactionList.StateAndType> getInputsFromTx(CordaRPCOps proxy, CoreTransaction coreTransaction){
         List<TransactionList.StateAndType> inputList = new ArrayList<>();
         for (StateRef stateRef : coreTransaction.getInputs()) {
-            SignedTransaction signedTransaction = NodeRPCClient.getRpcProxy()
+            SignedTransaction signedTransaction = proxy
                     .internalFindVerifiedTransaction(stateRef.getTxhash());
             if (signedTransaction != null) {
                 inputList.add(new TransactionList.StateAndType(
@@ -216,23 +217,23 @@ public class TransactionServiceImpl implements TransactionService {
         return outputTypeCountList;
     }
     @Override
-    public Object triggerFlow(FlowInfo flowInfo) throws UnsupportedFlowParamException,
+    public Object triggerFlow(CordaRPCOps proxy, FlowInfo flowInfo) throws UnsupportedFlowParamException,
             ClassNotFoundException, ExecutionException, InterruptedException {
         Class clazz = Class.forName(flowInfo.getFlowName());
         List<Object> params = new ArrayList<>();
         if(flowInfo.getFlowParams() != null && flowInfo.getFlowParams().size()>0) {
             for (FlowParam flowParam : flowInfo.getFlowParams()) {
-                params.add(buildFlowParam(flowParam));
+                params.add(buildFlowParam(proxy, flowParam));
             }
         }
         if(params.size() == 0){
-            return NodeRPCClient.getRpcProxy().startFlowDynamic(clazz).getReturnValue().get();
+            return proxy.startFlowDynamic(clazz).getReturnValue().get();
         }else {
-            return NodeRPCClient.getRpcProxy().startFlowDynamic(clazz, params.toArray()).getReturnValue().get();
+            return proxy.startFlowDynamic(clazz, params.toArray()).getReturnValue().get();
         }
     }
 
-    private Object buildFlowParam(FlowParam flowParam){
+    private Object buildFlowParam(CordaRPCOps proxy, FlowParam flowParam){
         if(flowParam.getFlowParams()!=null && flowParam.getFlowParams().size()>0){
             List<Object> params = new ArrayList<>();
             Class clazz = null;
@@ -247,7 +248,7 @@ public class TransactionServiceImpl implements TransactionService {
 
             try {
                 for (FlowParam param : flowParam.getFlowParams()) {
-                    params.add(buildFlowParam(param));
+                    params.add(buildFlowParam(proxy, param));
                 }
 
                 for (Constructor<?> ctor : clazz.getConstructors()) {
@@ -261,7 +262,7 @@ public class TransactionServiceImpl implements TransactionService {
 
         switch (flowParam.getParamType().getCanonicalName()){
             case "net.corda.core.identity.Party":
-                return NodeRPCClient.getRpcProxy().partiesFromName((String)flowParam.getParamValue(), false).iterator().next();
+                return proxy.partiesFromName((String)flowParam.getParamValue(), false).iterator().next();
 
             case "java.lang.String":
             case "java.lang.StringBuilder":
@@ -320,7 +321,7 @@ public class TransactionServiceImpl implements TransactionService {
 
             case "java.util.List":
             case "java.util.Set":
-                return buildListParam(flowParam);
+                return buildListParam(proxy, flowParam);
 
             default:
                 throw new UnsupportedFlowParamException("Type "+ flowParam.getParamType() + " in Flow Parameter not " +
@@ -328,7 +329,7 @@ public class TransactionServiceImpl implements TransactionService {
         }
     }
 
-    private Object buildListParam(FlowParam flowParam){
+    private Object buildListParam(CordaRPCOps proxy, FlowParam flowParam){
         List<Object> paramVal = new ArrayList<>();
         ArrayList<Object> paramValArr = (ArrayList<Object>) flowParam.getParamValue();
         for(Object paramObj: paramValArr){
@@ -337,7 +338,7 @@ public class TransactionServiceImpl implements TransactionService {
             param.setParamValue(paramObj);
             param.setFlowParams(flowParam.getFlowParams());
             //param.set
-            Object val = buildFlowParam(param);
+            Object val = buildFlowParam(proxy, param);
             paramVal.add(val);
         }
         return paramVal;

@@ -5,8 +5,9 @@ import net.corda.explorer.model.request.LoginRequest;
 import net.corda.explorer.model.response.Profile;
 
 import java.io.IOException;
+import java.util.UUID;
 
 public interface LoginService {
     Profile loginToNode(LoginRequest loginRequest) throws ConnectionException;
-    Profile getProfile();
+    Profile getProfile(UUID nodeConnId);
 }

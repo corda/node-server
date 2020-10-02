@@ -4,6 +4,7 @@ public class Profile {
     private String name;
     private String city;
     private String country;
+    private String rpcConnectionId;
 
     public String getName() {
         return name;
@@ -28,4 +29,8 @@ public class Profile {
     public void setCountry(String country) {
         this.country = country;
     }
+
+    public String getRpcConnectionId() { return rpcConnectionId; }
+
+    public void setRpcConnectionId(String rpcConnectionId) { this.rpcConnectionId = rpcConnectionId; }
 }

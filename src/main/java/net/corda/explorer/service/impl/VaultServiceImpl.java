@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import net.corda.core.contracts.ContractState;
 import net.corda.core.identity.CordaX500Name;
 import net.corda.core.identity.Party;
+import net.corda.core.messaging.CordaRPCOps;
 import net.corda.core.node.NodeInfo;
 import net.corda.core.node.services.Vault;
 import net.corda.core.node.services.vault.PageSpecification;
@@ -23,7 +24,7 @@ public class VaultServiceImpl implements VaultService {
     private Map<String, Class> contractStateClassMap = new HashMap<>();
 
     @Override
-    public Vault.Page getVaultStates(VaultFilterSelection filter) throws ClassNotFoundException{
+    public Vault.Page getVaultStates(CordaRPCOps proxy, VaultFilterSelection filter) throws ClassNotFoundException{
         PageSpecification pageSpecification =
                 new PageSpecification(filter.getOffset() + 1, filter.getPageSize());
 
@@ -64,7 +65,7 @@ public class VaultServiceImpl implements VaultService {
         List<Party> parties = null;
         if(filter.getParties()!=null) {
             parties = filter.getParties().stream().map(s ->
-                    NodeRPCClient.getRpcProxy().wellKnownPartyFromX500Name(CordaX500Name.parse(s)))
+                    proxy.wellKnownPartyFromX500Name(CordaX500Name.parse(s)))
                     .collect(Collectors.toList());
         }
 
@@ -76,7 +77,7 @@ public class VaultServiceImpl implements VaultService {
             queryCriteria = addParticipants(queryCriteria, parties);
         }
 
-        return NodeRPCClient.getRpcProxy()
+        return proxy
                 .vaultQueryByWithPagingSpec(ContractState.class, queryCriteria, pageSpecification);
     }
 
@@ -97,14 +98,14 @@ public class VaultServiceImpl implements VaultService {
     }
 
     @Override
-    public VaultFilter  getVaultFilters() {
+    public VaultFilter  getVaultFilters(CordaRPCOps proxy) {
         VaultFilter filter = new VaultFilter();
         QueryCriteria.VaultQueryCriteria queryCriteria = new QueryCriteria.VaultQueryCriteria().withStatus(Vault.StateStatus.ALL);
         Map<String, String> stateTypeMap = new TreeMap<>();
         Integer offset = 1;
         Boolean done = false;
         while (!done){
-            Vault.Page<ContractState> result = NodeRPCClient.getRpcProxy().vaultQueryByWithPagingSpec(ContractState.class, queryCriteria, new PageSpecification(offset, 200));
+            Vault.Page<ContractState> result = proxy.vaultQueryByWithPagingSpec(ContractState.class, queryCriteria, new PageSpecification(offset, 200));
             result.getStates().forEach(stateAndRef -> {
                 stateTypeMap.put(stateAndRef.getState().getData().getClass().toString().substring(
                         stateAndRef.getState().getData().getClass().toString().lastIndexOf(".") + 1),
@@ -120,7 +121,7 @@ public class VaultServiceImpl implements VaultService {
 
         filter.setStateTypes(stateTypeMap);
 
-        filter.setNotaries(NodeRPCClient.getRpcProxy().notaryIdentities());
+        filter.setNotaries(proxy.notaryIdentities());
 
         Map<String, String> status = new HashMap<>();
         status.put("Consumed", Vault.StateStatus.CONSUMED.toString());
@@ -133,8 +134,8 @@ public class VaultServiceImpl implements VaultService {
         filter.setRelevancy(relevancy);
 
         List<Party> parties = new ArrayList<>();
-        List<NodeInfo> nodeInfoList = NodeRPCClient.getRpcProxy().networkMapSnapshot();
-        List<Party> notaries = NodeRPCClient.getRpcProxy().notaryIdentities();
+        List<NodeInfo> nodeInfoList = proxy.networkMapSnapshot();
+        List<Party> notaries = proxy.notaryIdentities();
         for(NodeInfo nodeInfo: nodeInfoList){
             if (!notaries.contains(nodeInfo.getLegalIdentities().get(0))) {
                 parties.add(nodeInfo.getLegalIdentities().get(0));

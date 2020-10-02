@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /***
  *
@@ -27,12 +28,11 @@ import java.util.Map;
 public class NodeRPCClient {
     private static final Logger logger = LoggerFactory.getLogger(NodeRPCClient.class);
 
-    private static CordaRPCOps rpcProxy;
     private static Session sshSession;
-    private Map<String, String> partyKeyMap = new HashMap<>();
+    private static Map<UUID, CordaRPCOps> nodeConnIdToProxy = new HashMap<>();
 
-    public static CordaRPCOps getRpcProxy() {
-        return rpcProxy;
+    public static CordaRPCOps getRpcProxy(UUID nodeConnId) {
+        return nodeConnIdToProxy.get(nodeConnId);
     }
 
     public Profile doLogin(LoginRequest loginRequest) throws ConnectionException {
@@ -53,20 +53,23 @@ public class NodeRPCClient {
 
         try {
             CordaRPCClientConfiguration config = new CordaRPCClientConfiguration(Duration.ofMinutes(3), 4);
-            rpcProxy = new CordaRPCClient(NetworkHostAndPort.parse(hostForRPCClient + ":" +
+            CordaRPCOps rpcProxy = new CordaRPCClient(NetworkHostAndPort.parse(hostForRPCClient + ":" +
                     loginRequest.getPort()), config).start(loginRequest.getUsername(), loginRequest.getPassword()).getProxy();
-            return getProfile();
+            UUID nodeConnId = UUID.randomUUID();
+            nodeConnIdToProxy.put(nodeConnId, rpcProxy);
+            return getProfile(nodeConnId);
         } catch (RPCException re) {
             throw new ConnectionException(re.getMessage());
         }
     }
 
-    public Profile getProfile() {
-        Party party = rpcProxy.nodeInfo().getLegalIdentities().get(0);
+    public Profile getProfile(UUID nodeConnId) {
+        Party party = nodeConnIdToProxy.get(nodeConnId).nodeInfo().getLegalIdentities().get(0);
         Profile profile = new Profile();
         profile.setName(party.getName().getOrganisation());
         profile.setCity(party.getName().getLocality());
         profile.setCountry(party.getName().getCountry());
+        profile.setRpcConnectionId(nodeConnId.toString());
         return profile;
     }
 }
