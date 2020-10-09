@@ -8,7 +8,7 @@ import net.corda.explorer.model.response.LogEntries;
 import net.corda.explorer.model.response.LogEntry;
 import net.corda.explorer.model.response.MessageResponseEntity;
 import net.corda.explorer.rpc.AuthCheck;
-import net.corda.explorer.service.StringToEntry;
+import net.corda.explorer.service.impl.StringToEntry;
 import net.corda.explorer.service.impl.ReverseLineInputStream;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;

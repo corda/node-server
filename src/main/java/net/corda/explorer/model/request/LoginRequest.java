@@ -9,6 +9,15 @@ public class LoginRequest {
     private String username;
     private String password;
     private Map ssh;
+    private String cordappDir;
+
+    public String getCordappDir() {
+        return cordappDir;
+    }
+
+    public void setCordappDir(String cordappDir) {
+        this.cordappDir = cordappDir;
+    }
 
     public String getHostName() {
         return hostName;

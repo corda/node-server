@@ -5,6 +5,15 @@ public class Profile {
     private String city;
     private String country;
     private String rpcConnectionId;
+    private String cordappDir;
+
+    public String getCordappDir() {
+        return cordappDir;
+    }
+
+    public void setCordappDir(String cordappDir) {
+        this.cordappDir = cordappDir;
+    }
 
     public String getName() {
         return name;

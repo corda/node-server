@@ -6,7 +6,6 @@ import net.corda.explorer.model.request.LoginRequest;
 import net.corda.explorer.model.response.Profile;
 import net.corda.explorer.rpc.NodeRPCClient;
 import net.corda.explorer.service.LoginService;
-import net.corda.explorer.service.SettingsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,9 +21,6 @@ public class LoginServiceImpl implements LoginService {
     @Autowired
     private NodeRPCClient rpcClient;
 
-    @Autowired
-    private SettingsService settingsService;
-
     @PostConstruct
     public void autoLogin() throws ConnectionException {
         if (autoLoginConfig.isEnabled()) {
@@ -35,7 +31,6 @@ public class LoginServiceImpl implements LoginService {
     @Override
     public Profile loginToNode(LoginRequest loginRequest) throws ConnectionException {
         Profile profile = rpcClient.doLogin(loginRequest);
-        settingsService.loadApplicationSettings();
         return profile;
     }
 

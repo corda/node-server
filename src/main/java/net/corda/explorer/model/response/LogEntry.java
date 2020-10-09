@@ -1,6 +1,5 @@
 package net.corda.explorer.model.response;
 
-import java.util.Date;
 public class LogEntry {
     private final String severity;
     private final String date;

@@ -19,7 +19,6 @@ import net.corda.explorer.model.response.FlowData;
 import net.corda.explorer.model.response.TransactionList;
 import net.corda.explorer.rpc.NodeRPCClient;
 import net.corda.explorer.service.ExplorerService;
-import net.corda.explorer.service.SettingsService;
 import net.corda.explorer.service.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,10 +42,10 @@ import java.util.stream.Collectors;
 public class TransactionServiceImpl implements TransactionService {
 
     @Autowired
-    private ExplorerService explorerService;
+    private NodeRPCClient rpcClient;
 
     @Autowired
-    private SettingsService settingsService;
+    private ExplorerService explorerService;
 
     private List<File> jarFiles;
 
@@ -83,7 +82,10 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     public FlowData getFlowList(CordaRPCOps proxy) {
         FlowData flowData = new FlowData();
-        List<File> jarFiles = loadCorDappsToClassPath();
+
+        String cordappDir = rpcClient.getProfile(proxy.nodeInfo().getLegalIdentities().get(0)).getCordappDir();
+
+        List<File> jarFiles = loadCorDappsToClassPath(cordappDir);
         this.jarFiles = jarFiles;
         flowData.setFlowInfoList(loadFlowsInfoFromJarFiles(jarFiles, proxy.registeredFlows()));
         return flowData;
@@ -344,11 +346,8 @@ public class TransactionServiceImpl implements TransactionService {
         return paramVal;
     }
 
-    private List<File> loadCorDappsToClassPath() {
-        //TODO Fetch from Config
-        String CORDAPP_PATH = settingsService.getApplicationSettings().getCordappDirectory();
-
-        List<File> jarFiles = filterJarFiles(CORDAPP_PATH);
+    private List<File> loadCorDappsToClassPath(String cordappDir) {
+        List<File> jarFiles = filterJarFiles(cordappDir);
         addJarFilesToClassPath(jarFiles);
         return jarFiles;
     }

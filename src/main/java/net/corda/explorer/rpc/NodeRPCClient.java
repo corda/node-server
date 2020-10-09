@@ -7,6 +7,7 @@ import net.corda.client.rpc.CordaRPCClientConfiguration;
 import net.corda.client.rpc.RPCException;
 import net.corda.core.identity.Party;
 import net.corda.core.messaging.CordaRPCOps;
+import net.corda.core.node.NodeInfo;
 import net.corda.core.utilities.NetworkHostAndPort;
 import net.corda.explorer.exception.ConnectionException;
 import net.corda.explorer.model.request.LoginRequest;
@@ -30,6 +31,7 @@ public class NodeRPCClient {
 
     private static Session sshSession;
     private static Map<UUID, CordaRPCOps> nodeConnIdToProxy = new HashMap<>();
+    private static Map<Party, Profile> nodeConnIdToProfile = new HashMap<>();
 
     public static CordaRPCOps getRpcProxy(UUID nodeConnId) {
         return nodeConnIdToProxy.get(nodeConnId);
@@ -57,19 +59,29 @@ public class NodeRPCClient {
                     loginRequest.getPort()), config).start(loginRequest.getUsername(), loginRequest.getPassword()).getProxy();
             UUID nodeConnId = UUID.randomUUID();
             nodeConnIdToProxy.put(nodeConnId, rpcProxy);
-            return getProfile(nodeConnId);
+            return setProfile(nodeConnId, loginRequest.getCordappDir());
         } catch (RPCException re) {
             throw new ConnectionException(re.getMessage());
         }
     }
 
-    public Profile getProfile(UUID nodeConnId) {
+    private Profile setProfile(UUID nodeConnId, String cordappDir) {
         Party party = nodeConnIdToProxy.get(nodeConnId).nodeInfo().getLegalIdentities().get(0);
         Profile profile = new Profile();
         profile.setName(party.getName().getOrganisation());
         profile.setCity(party.getName().getLocality());
         profile.setCountry(party.getName().getCountry());
         profile.setRpcConnectionId(nodeConnId.toString());
+        profile.setCordappDir(cordappDir);
+        nodeConnIdToProfile.put(party, profile);
         return profile;
+    }
+
+    public Profile getProfile(Party party) {
+        return nodeConnIdToProfile.get(party);
+    }
+
+    public Profile getProfile(UUID nodeConnId) {
+        return nodeConnIdToProfile.get(nodeConnIdToProxy.get(nodeConnId).nodeInfo().getLegalIdentities().get(0));
     }
 }

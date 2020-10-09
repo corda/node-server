@@ -1,4 +1,4 @@
-package net.corda.explorer.service;
+package net.corda.explorer.service.impl;
 
 import net.corda.explorer.model.response.LogBody;
 import net.corda.explorer.model.response.LogEntry;
