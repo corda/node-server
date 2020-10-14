@@ -28,13 +28,13 @@ public class StringToEntry {
     }
 
     private static LogBody strToLogBody(String strBody) {
-        final String regex = "([^{]+)[{]([^{}]++|[{][^{}]*[}])*[}](.*)";
-        Matcher matcher = Pattern.compile(regex, Pattern.MULTILINE).matcher(strBody);
-        if (matcher.find() && matcher.groupCount() > 1) {
-            return new LogBody(matcher.group(1), matcher.group(2));
-//            String jsonAttempt = translateToJSON(matcher.group(2));
-//            if (jsonAttempt != null) { return new LogBody(matcher.group(1), jsonAttempt); }
-        }
+//        final String regex = "([^{]+)[{]([^{}]++|[{][^{}]*[}])*[}](.*)";
+//        Matcher matcher = Pattern.compile(regex, Pattern.MULTILINE).matcher(strBody);
+//        if (matcher.find() && matcher.groupCount() > 1) {
+//            return new LogBody(matcher.group(1), matcher.group(2));
+////            String jsonAttempt = translateToJSON(matcher.group(2));
+////            if (jsonAttempt != null) { return new LogBody(matcher.group(1), jsonAttempt); }
+//        }
         return new LogBody(strBody, "{}");
     }
 
