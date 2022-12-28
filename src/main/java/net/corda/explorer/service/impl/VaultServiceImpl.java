@@ -28,6 +28,9 @@ public class VaultServiceImpl implements VaultService {
                 new PageSpecification(filter.getOffset() + 1, filter.getPageSize());
 
         /* ContractStateType Filters */
+        if(contractStateClassMap.size()==0){
+            getVaultFilters();
+        }
         Set<Class<ContractState>> stateType = ImmutableSet.of(ContractState.class);
         HashSet<Class<ContractState>> stateTypeSet = new HashSet<>();
         if(filter.getStateTypes() != null &&  filter.getStateTypes().size() > 0){
